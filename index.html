@@ -617,6 +617,7 @@ function friendlyError(e){
   if (/AADSTS65001|consent_required/i.test(code + msg)) return "Your Microsoft 365 administrator needs to approve this app before it can open the shared workbook. Ask the dashboard admin to request admin consent.";
   if (/AADSTS50105|AADSTS50020|AADSTS90072/i.test(msg)) return "This Microsoft account is not allowed to use the dashboard. Sign in with your partner Microsoft 365 account.";
   if (/AADSTS700016|AADSTS90002/i.test(msg)) return "The dashboard's sign-in settings do not match the Microsoft 365 tenant. Ask the dashboard admin to check the app registration.";
+  if (/AADSTS9002326/i.test(msg)) return "This web address is registered with the wrong type for sign-in. Ask the dashboard admin to list it under Single-page application (not Web) in the app registration.";
   if (/AADSTS50011/i.test(msg)) return "This web address is not registered for sign-in yet. Ask the dashboard admin to add it as a redirect URI in the app registration.";
   if (e instanceof GraphError){
     if (e.status === 401) return "Your sign-in expired. Sign in again.";
