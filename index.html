@@ -217,6 +217,13 @@ button,input,select,textarea{font:inherit;color:inherit}
 .due.soon{color:var(--warn-text)}
 .due.orig{color:var(--muted);font-weight:500}
 .bar{height:6px;border-radius:999px;background:var(--sunken);overflow:hidden;margin:10px 0 6px}
+.prog{display:flex;align-items:center;gap:10px;margin:10px 0 2px}
+.prog .bar{flex:1;margin:0}
+.prog .pct{font:800 13px/1 var(--font-head);min-width:36px;color:var(--text)}
+.prog.big{flex-wrap:wrap;gap:6px 12px;margin-top:12px}
+.prog.big .pct{font-size:15px;min-width:auto}
+.prog.big .bar{flex:1 1 160px;height:8px}
+.prog.big .subcount{font-size:12.5px;color:var(--muted)}
 .bar i{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .6s var(--ease)}
 .card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
 .subcount{font-size:12px;color:var(--muted)}
@@ -483,6 +490,13 @@ const partnerList = () => ORDER.map(n => (S.data?.Partners||[]).find(p => p.Shor
 const supports = t => (t.Support||"").split(";").map(s=>s.trim()).filter(Boolean);
 const subsOf = id => S.data.Subtasks.filter(s=>s.TaskID===id).sort((a,b)=>(+a.Order||0)-(+b.Order||0));
 const taskById = id => S.data.Tasks.find(t=>t.TaskID===id);
+/* Completion: Done = 100%; otherwise share of sub-tasks done; no sub-tasks = 0%. */
+function progress(t){
+  const subs = subsOf(t.TaskID), done = subs.filter(s => s.Status === "Done").length;
+  const pct = t.Status === "Done" ? 100 : (subs.length ? Math.round(done / subs.length * 100) : 0);
+  return {pct, done, total: subs.length};
+}
+const progressBar = (pct, label) => `<div class="bar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${pct}" aria-label="${esc(label)}"><i style="width:${pct}%"></i></div>`;
 
 function normValue(col, v){
   if (v === null || v === undefined) return "";
@@ -880,15 +894,15 @@ function renderSummary(){
 
 function renderCard(t){
   const subs = subsOf(t.TaskID), done = subs.filter(s => s.Status === "Done").length;
-  const pct = subs.length ? Math.round(done/subs.length*100) : 0;
+  const {pct} = progress(t);
   const dc = dueClass(t);
   const apa = t.AllPartnerApproval === "Yes" ? `<span class="apa" title="Needs approval from all three partners">All-partner approval <span class="ticks">${ORDER.map(p => `<span class="tick ${t["Approved"+p]==="Yes"?"on":""} ${PKEY[p]}" style="--c:var(--${PKEY[p]})" title="${DISPLAY[p]}: ${t["Approved"+p]==="Yes"?"approved":"pending"}">${t["Approved"+p]==="Yes"?"✓":""}</span>`).join("")}</span></span>` : "";
   return `<button type="button" class="card ${t.Status==="Done"?"done":""}" style="--accent:var(--${PKEY[t.Lead]})" data-open="${esc(t.TaskID)}" aria-label="${esc(t.TaskID+", "+t.Title+", "+t.Status+", "+dueText(t))}">
     <div class="card-top"><span class="tid">${esc(t.TaskID)}</span><span class="pill ${statusClass(t.Status)}">${esc(t.Status)}</span>${t.Priority==="High"?`<span class="prio high">High priority</span>`:t.Priority==="Low"?`<span class="prio">Low priority</span>`:""}${t.Recurrence&&t.Recurrence!=="None"?`<span class="prio">${esc(t.Recurrence)}</span>`:""}</div>
     <h4>${esc(t.Title)}</h4>
     <div class="meta"><span class="due ${dc}">${ICON.cal}${esc(dueText(t))}</span></div>
-    ${subs.length?`<div class="bar" aria-hidden="true"><i style="width:${pct}%"></i></div>`:""}
-    <div class="card-foot"><div class="avs">${av(t.Lead)}${supports(t).map(s => av(s,"sm")).join("")}</div><span class="subcount">${subs.length?`${done} of ${subs.length} sub-tasks`:(t.Status==="Needs sub-tasks"?"Sub-tasks pending":"No sub-tasks")}</span></div>
+    <div class="prog"><span class="pct">${pct}%</span>${progressBar(pct, `${t.TaskID} ${pct}% complete`)}</div>
+    <div class="card-foot"><div class="avs">${av(t.Lead)}${supports(t).map(s => av(s,"sm")).join("")}</div><span class="subcount">${subs.length?`${done} of ${subs.length} sub-tasks done`:(t.Status==="Needs sub-tasks"?"Sub-tasks pending":"No sub-tasks")}</span></div>
     ${apa?`<div style="margin-top:8px">${apa}</div>`:""}
     ${t.Source?`<div class="src">${esc(t.Source)}</div>`:""}
   </button>`;
@@ -1046,7 +1060,7 @@ function openTask(id){
   sheet.style.setProperty("--accent", `var(--${PKEY[t.Lead]})`);
   sheet.innerHTML = `<form class="sheet-in" method="dialog" id="taskForm" novalidate>
     <div class="sheet-h">${av(t.Lead,"lg")}<div style="min-width:0"><div class="card-top"><span class="tid">${esc(t.TaskID)}</span><span class="pill ${statusClass(t.Status)}">${esc(t.Status)}</span></div><h2 id="sheetTitle">${esc(t.Title)}</h2>
-      <div class="meta" style="margin-top:6px"><span class="due ${dueClass(t)}">${ICON.cal}${esc(dueText(t))}</span><span>Lead ${esc(DISPLAY[t.Lead])}${sup.length?`, support ${sup.map(s=>esc(DISPLAY[s])).join(" and ")}`:""}</span></div></div>
+      <div class="meta" style="margin-top:6px"><span class="due ${dueClass(t)}">${ICON.cal}${esc(dueText(t))}</span><span>Lead ${esc(DISPLAY[t.Lead])}${sup.length?`, support ${sup.map(s=>esc(DISPLAY[s])).join(" and ")}`:""}</span></div>${(() => { const pr = progress(t); return `<div class="prog big"><span class="pct">${pr.pct}% complete</span>${progressBar(pr.pct, `${pr.pct}% complete`)}<span class="subcount">${pr.total ? `${pr.done} of ${pr.total} sub-tasks done` : "No sub-tasks yet"}</span></div>`; })()}</div>
       <button type="button" class="x" data-close aria-label="Close">${ICON.x}</button></div>
     <div class="sheet-b">
       ${t.Description?`<div class="desc">${esc(t.Description)}</div>`:""}
