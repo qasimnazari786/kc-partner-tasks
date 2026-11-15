@@ -208,6 +208,32 @@ button,input,select,textarea{font:inherit;color:inherit}
 .st-done::before{content:"\2713";width:auto;height:auto;background:none;opacity:1;font-size:11px}
 .st-confirm{background:var(--warn-bg);color:var(--warn-text)}
 .st-needs{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line-2);color:var(--text-2)}
+/* quick status icon on each card (lead only) */
+.card-wrap{position:relative}
+.card-wrap+.card-wrap{margin-top:10px}
+.cards-grid .card-wrap+.card-wrap{margin-top:0}
+.card-wrap .card{padding-right:52px}
+.st-btn{position:absolute;top:10px;right:10px;z-index:2;width:34px;height:34px;border-radius:50%;border:0;background:transparent;display:grid;place-items:center;cursor:pointer;color:var(--muted);transition:background .15s,transform .15s}
+.st-btn svg{width:24px;height:24px}
+.st-btn:hover:not(:disabled),.st-btn[aria-expanded="true"]{background:var(--sunken);transform:scale(1.08)}
+.st-btn:focus-visible{outline:2px solid var(--accent,var(--text-2));outline-offset:1px}
+.st-btn:disabled{cursor:default;opacity:.7}
+.si-progress{color:var(--ok-text)}.si-done{color:var(--ok-text)}.si-blocked{color:var(--danger)}.si-confirm{color:var(--warn-text)}
+.st-menu{position:fixed;z-index:90;min-width:200px;background:var(--surface);color:var(--text);border-radius:14px;box-shadow:var(--shadow-2);padding:6px;display:none}
+.st-menu.open{display:block;animation:toastIn .15s var(--ease)}
+.st-menu .mh{font-size:11.5px;font-weight:700;color:var(--muted);padding:6px 10px 4px}
+.st-menu button{display:flex;align-items:center;gap:10px;width:100%;border:0;background:none;padding:8px 10px;border-radius:9px;font:600 14px var(--font-body);color:var(--text);cursor:pointer;text-align:left}
+.st-menu button svg{width:20px;height:20px;flex:none}
+.st-menu button:hover,.st-menu button:focus-visible{background:var(--sunken);outline:0}
+.st-menu button[aria-checked="true"]{background:var(--sunken)}
+.st-menu button[aria-checked="true"]::after{content:"\2713";margin-left:auto;color:var(--muted)}
+.done-list{margin:10px 0 0;padding:0;list-style:none;max-height:220px;overflow:auto;border-radius:12px;background:var(--surface-2)}
+.done-list li{display:flex;gap:8px;align-items:baseline;padding:7px 12px;font-size:13.5px;border-bottom:1px solid var(--line)}
+.done-list li:last-child{border-bottom:0}
+.done-list .own{flex:none;font-size:11.5px;font-weight:700;color:var(--text-2)}
+.confirm-chk{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:14px;font-weight:600;cursor:pointer}
+.confirm-chk input{width:18px;height:18px;margin-top:1px;flex:none;accent-color:var(--ok-text)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
 .prio{font-size:11.5px;font-weight:700;color:var(--muted)}
 .prio.high{color:var(--danger)}
 .meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:13px;color:var(--text-2)}
@@ -394,6 +420,7 @@ dialog::backdrop{background:rgba(22,16,11,.42);backdrop-filter:blur(3px);-webkit
 
 <dialog class="sheet" id="sheet" aria-labelledby="sheetTitle"></dialog>
 <dialog class="small-dlg" id="dlg"></dialog>
+<div class="st-menu" id="stMenu" role="menu" aria-label="Change task status"></div>
 
 <script>
 /* =====================================================================
@@ -560,6 +587,15 @@ class GraphStore {
     if (!row) throw new GraphError(404, "rowNotFound", `${rec[KEYS[table]]} was not found in ${table}.`);
     await this.call("PATCH", `${this.wb}/tables/${table}/rows/itemAt(index=${row._index})`, {values:[this.cols(table).map(c => rec[c] ?? "")]});
   }
+  async patchMany(table, recs){
+    if (!recs.length) return;
+    const rows = await this.readTable(table);
+    for (const rec of recs){
+      const row = rows.find(r => r[KEYS[table]] === rec[KEYS[table]]);
+      if (!row) throw new GraphError(404, "rowNotFound", `${rec[KEYS[table]]} was not found in ${table}.`);
+      await this.call("PATCH", `${this.wb}/tables/${table}/rows/itemAt(index=${row._index})`, {values:[this.cols(table).map(c => rec[c] ?? "")]});
+    }
+  }
   async add(table, recs){
     if (!recs.length) return;
     const existing = await this.readTable(table);
@@ -585,6 +621,8 @@ class MemoryStore {
   async readAll(){ await this.delay(); return JSON.parse(JSON.stringify(this.data)); }
   async readRow(table, id){ await this.delay(); const r = this.data[table].find(x => x[KEYS[table]] === id); return r ? {...r} : null; }
   async patch(table, rec){ await this.delay(); const i = this.data[table].findIndex(x => x[KEYS[table]] === rec[KEYS[table]]); this.data[table][i] = {...rec}; }
+  async patchMany(table, recs){ for (const r of recs) await this.patch(table, r); }
+  async readTable(table){ await this.delay(); return JSON.parse(JSON.stringify(this.data[table])); }
   async add(table, recs){ await this.delay(); this.data[table].push(...recs.map(r => ({...r}))); }
   async session(fn){ return fn(); }
 }
@@ -813,6 +851,20 @@ const ICON = {
 const av = (p, size="") => `<span class="av ${size} av-${PKEY[p]||""}" title="${esc(DISPLAY[p]||p)}" aria-label="${esc(DISPLAY[p]||p)}">${esc(INITIALS[p]||p.slice(0,2).toUpperCase())}</span>`;
 const pc = p => `--c:var(--${PKEY[p]});--on:var(--${PKEY[p]}-on)`;
 const statusClass = s => ({"In progress":"st-progress","Blocked":"st-blocked","Done":"st-done","To confirm":"st-confirm","Needs sub-tasks":"st-needs"}[s] || "");
+const SICON = {
+  "Not started": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>',
+  "In progress": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3a9 9 0 0 1 0 18z" fill="currentColor" stroke="none"/></svg>',
+  "Blocked": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M8 12h8" stroke-width="2.6" stroke-linecap="round"/></svg>',
+  "Done": '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="currentColor"/><path d="M7.5 12.5l3 3 6-6.5" fill="none" stroke="var(--surface)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  "To confirm": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.6 9.4a2.5 2.5 0 1 1 3.4 2.3c-.6.3-1 .8-1 1.5v.5" stroke-linecap="round"/><circle cx="12" cy="16.8" r=".6" fill="currentColor"/></svg>',
+  "Needs sub-tasks": '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3" aria-hidden="true"><circle cx="12" cy="12" r="9"/></svg>'
+};
+const statusIconClass = s => ({"In progress":"si-progress","Blocked":"si-blocked","Done":"si-done","To confirm":"si-confirm"}[s] || "");
+function statusBtn(t){
+  const isLead = S.me && t.Lead === S.me.short;
+  const tip = isLead ? `Status: ${t.Status}. Click to change.` : `Status: ${t.Status}. Only ${DISPLAY[t.Lead]||t.Lead}, the lead, can change it here.`;
+  return `<button type="button" class="st-btn ${statusIconClass(t.Status)}" data-status="${esc(t.TaskID)}" ${isLead?`aria-haspopup="menu" aria-expanded="false"`:"disabled"} title="${esc(tip)}" aria-label="${esc(t.TaskID+" "+tip)}">${SICON[t.Status]||SICON["Not started"]}</button>`;
+}
 
 function render(){
   if (S.mode !== "preview" && !S.me) return;
@@ -839,6 +891,12 @@ function render(){
   html += `<footer class="foot"><span>Private to the partners. Data stays in the shared Microsoft 365 workbook.</span><span><button type="button" data-act="theme">Appearance: ${themeLabel()}</button></span></footer></div>`;
   main.innerHTML = html;
   wireMain();
+  // Keep an open status menu open across the background refresh, linked to the new icon.
+  const menu = $("#stMenu");
+  if (menu.classList.contains("open")){
+    const nb = main.querySelector(`[data-status="${CSS.escape(menu.dataset.for)}"]:not(:disabled)`);
+    if (nb && taskById(menu.dataset.for)){ nb.setAttribute("aria-expanded","true"); S.menuBtn = nb; } else closeStatusMenu();
+  }
 }
 
 function viewCounts(){
@@ -897,7 +955,7 @@ function renderCard(t){
   const {pct} = progress(t);
   const dc = dueClass(t);
   const apa = t.AllPartnerApproval === "Yes" ? `<span class="apa" title="Needs approval from all three partners">All-partner approval <span class="ticks">${ORDER.map(p => `<span class="tick ${t["Approved"+p]==="Yes"?"on":""} ${PKEY[p]}" style="--c:var(--${PKEY[p]})" title="${DISPLAY[p]}: ${t["Approved"+p]==="Yes"?"approved":"pending"}">${t["Approved"+p]==="Yes"?"✓":""}</span>`).join("")}</span></span>` : "";
-  return `<button type="button" class="card ${t.Status==="Done"?"done":""}" style="--accent:var(--${PKEY[t.Lead]})" data-open="${esc(t.TaskID)}" aria-label="${esc(t.TaskID+", "+t.Title+", "+t.Status+", "+dueText(t))}">
+  return `<div class="card-wrap" style="--accent:var(--${PKEY[t.Lead]})">${statusBtn(t)}<button type="button" class="card ${t.Status==="Done"?"done":""}" style="--accent:var(--${PKEY[t.Lead]})" data-open="${esc(t.TaskID)}" aria-label="${esc(t.TaskID+", "+t.Title+", "+t.Status+", "+dueText(t))}">
     <div class="card-top"><span class="tid">${esc(t.TaskID)}</span><span class="pill ${statusClass(t.Status)}">${esc(t.Status)}</span>${t.Priority==="High"?`<span class="prio high">High priority</span>`:t.Priority==="Low"?`<span class="prio">Low priority</span>`:""}${t.Recurrence&&t.Recurrence!=="None"?`<span class="prio">${esc(t.Recurrence)}</span>`:""}</div>
     <h4>${esc(t.Title)}</h4>
     <div class="meta"><span class="due ${dc}">${ICON.cal}${esc(dueText(t))}</span></div>
@@ -905,7 +963,7 @@ function renderCard(t){
     <div class="card-foot"><div class="avs">${av(t.Lead)}${supports(t).map(s => av(s,"sm")).join("")}</div><span class="subcount">${subs.length?`${done} of ${subs.length} sub-tasks done`:(t.Status==="Needs sub-tasks"?"Sub-tasks pending":"No sub-tasks")}</span></div>
     ${apa?`<div style="margin-top:8px">${apa}</div>`:""}
     ${t.Source?`<div class="src">${esc(t.Source)}</div>`:""}
-  </button>`;
+  </button></div>`;
 }
 
 function renderSubRow(s){
@@ -1018,6 +1076,7 @@ function wireMain(){
   main.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { S.view = b.dataset.view; try{sessionStorage.setItem("kc-view",S.view);}catch(e){} render(); });
   main.querySelectorAll("[data-filter]").forEach(s => s.onchange = () => { S.filters[s.dataset.filter] = s.value; render(); });
   main.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openTask(b.dataset.open));
+  main.querySelectorAll("[data-status]:not(:disabled)").forEach(b => b.onclick = e => { e.stopPropagation(); openStatusMenu(b); });
   main.querySelectorAll("[data-more]").forEach(b => b.onclick = () => { S.showAll[b.dataset.more] = true; render(); });
   main.querySelectorAll("[data-day]").forEach(b => b.onclick = () => { S.view = "month"; render(); });
   main.querySelectorAll("[data-act]").forEach(b => b.onclick = () => {
@@ -1139,6 +1198,8 @@ async function saveTask(id, form){
   if (!changes.Title && changes.Title !== undefined){ toast("The title cannot be empty."); return; }
   if (!Object.keys(changes).length){ $("#sheet").close(); toast("No changes to save."); return; }
   if (changes.Status === "Blocked" && !(changes.BlockedReason ?? base.BlockedReason)){ toast("Add a blocked reason so the other partners know what it is waiting on."); form.BlockedReason.focus(); return; }
+  if (changes.Status === "Done" && !(await confirmDone(base))) return;
+  let closed = [];
   const ok = await guarded(async () => {
     let {fresh, ok} = await checkFresh("Tasks", base);
     if (!ok){
@@ -1150,11 +1211,14 @@ async function saveTask(id, form){
     else if (changes.Status) rec.CompletedAt = "";
     await S.store.session(async () => {
       await S.store.patch("Tasks", rec);
-      await S.store.add("ActivityLog", [logRow(changes.Status==="Done"?"Marked done":"Updated", id, Object.entries(changes).map(([k,v]) => `${k}: "${String(fresh[k]||"").slice(0,60)}" to "${String(v).slice(0,60)}"`).join("; "))]);
+      if (changes.Status === "Done") closed = await closeOpenSubs(id, rec.UpdatedAt);
+      const logs = [logRow(changes.Status==="Done"?"Marked done":"Updated", id, Object.entries(changes).map(([k,v]) => `${k}: "${String(fresh[k]||"").slice(0,60)}" to "${String(v).slice(0,60)}"`).join("; "))];
+      if (closed.length) logs.push(logRow("Sub-tasks closed with task", id, `${S.me.short} closed ${closed.length} open sub-task${closed.length===1?"":"s"} when marking the task done: ${closed.map(s => s.SubtaskID).join(", ")}`));
+      await S.store.add("ActivityLog", logs);
     });
     return true;
   });
-  if (ok){ $("#sheet").close(); toast(`${id} saved.`); await refresh(); }
+  if (ok){ $("#sheet").close(); toast(closed.length ? `${id} saved, ${closed.length} sub-task${closed.length===1?"":"s"} closed.` : `${id} saved.`); await refresh(); }
 }
 
 async function toggleSub(sid, checked, cb){
@@ -1185,17 +1249,103 @@ async function toggleSub(sid, checked, cb){
   }
 }
 
-async function quickDone(id){
-  const t = taskById(id);
+async function quickDone(id){ await setTaskStatus(id, "Done"); }
+
+/* Close every open sub-task of a task (used when the lead marks the whole task done). */
+async function closeOpenSubs(id, stamp){
+  const open = (await S.store.readTable("Subtasks")).filter(s => s.TaskID === id && s.Status !== "Done");
+  if (!open.length) return [];
+  await S.store.patchMany("Subtasks", open.map(s => ({...s, Status: "Done", CompletedAt: stamp, UpdatedBy: S.me.short, UpdatedAt: stamp})));
+  return open;
+}
+
+/* Ask the partner to double-confirm before a task (and all its open sub-tasks) is marked done. */
+function confirmDone(t){
+  return new Promise(resolve => {
+    const open = subsOf(t.TaskID).filter(s => s.Status !== "Done");
+    const dlg = $("#dlg");
+    dlg.innerHTML = `<div class="in"><h2>Mark ${esc(t.TaskID)} done?</h2><p style="margin:0;color:var(--text-2)">"${esc(t.Title)}"</p>
+      ${open.length ? `<p style="margin:12px 0 0">This also closes ${open.length===1?"the 1 open sub-task":`all ${open.length} open sub-tasks`}:</p><ul class="done-list">${open.map(s => `<li><span>${esc(s.Title)}</span><span class="own" style="margin-left:auto">${esc(DISPLAY[s.Owner]||s.Owner)}</span></li>`).join("")}</ul>` : `<p style="margin:12px 0 0;color:var(--text-2)">All sub-tasks are already done.</p>`}
+      <label class="confirm-chk"><input type="checkbox" id="doneOk"> <span>I confirm everything on this task is done${open.length?" or no longer needed":""}.</span></label>
+      <div class="dlg-actions"><button type="button" class="btn" data-c="cancel">Cancel</button><button type="button" class="btn primary" data-c="ok" disabled>Mark done</button></div></div>`;
+    const okBtn = dlg.querySelector('[data-c="ok"]');
+    dlg.querySelector("#doneOk").onchange = e => { okBtn.disabled = !e.target.checked; };
+    let answered = false;
+    dlg.querySelectorAll("[data-c]").forEach(b => b.onclick = () => { answered = true; dlg.close(); resolve(b.dataset.c === "ok"); });
+    dlg.onclose = () => { if (!answered) resolve(false); };
+    dlg.showModal();
+  });
+}
+
+function askBlockedReason(t){
+  return new Promise(resolve => {
+    const dlg = $("#dlg");
+    dlg.innerHTML = `<form class="in" method="dialog"><h2>What is ${esc(t.TaskID)} waiting on?</h2><p style="margin:0 0 10px;color:var(--text-2)">The other partners will see this on the task.</p>
+      <input id="blkReason" class="inp" style="width:100%;padding:10px 12px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--text);font:inherit" value="${esc(t.BlockedReason||"")}" placeholder="For example: waiting on the landlord's reply">
+      <div class="dlg-actions"><button type="button" class="btn" data-c="cancel">Cancel</button><button type="submit" class="btn primary">Set to Blocked</button></div></form>`;
+    const inp = dlg.querySelector("#blkReason"); let answered = false;
+    dlg.querySelector('[data-c="cancel"]').onclick = () => { answered = true; dlg.close(); resolve(null); };
+    dlg.querySelector("form").onsubmit = e => { e.preventDefault(); const v = clean(inp.value); if (!v){ inp.focus(); return; } answered = true; dlg.close(); resolve(v); };
+    dlg.onclose = () => { if (!answered) resolve(null); };
+    dlg.showModal(); inp.focus();
+  });
+}
+
+/* Change a task's status from the card icon. Done closes all open sub-tasks after confirmation. */
+async function setTaskStatus(id, status){
+  const t = taskById(id); if (!t || t.Status === status) return;
+  const extra = {};
+  if (status === "Done" && !(await confirmDone(t))) return;
+  if (status === "Blocked"){ const r = await askBlockedReason(t); if (r === null) return; extra.BlockedReason = r; }
+  let closed = [];
   const ok = await guarded(async () => {
     const {fresh, ok} = await checkFresh("Tasks", t);
-    if (!ok && (await conflictDialog(fresh, t, {Status:"Done"})) !== "overwrite") return false;
-    const rec = {...fresh, Status: "Done", CompletedAt: nowStamp(), UpdatedBy: S.me.short, UpdatedAt: nowStamp()};
-    await S.store.session(async () => { await S.store.patch("Tasks", rec); await S.store.add("ActivityLog", [logRow("Marked done", id, `Status: "${fresh.Status}" to "Done"`)]); });
+    if (!ok && (await conflictDialog(fresh, t, {Status: status, ...extra})) !== "overwrite") return false;
+    const stamp = nowStamp();
+    const rec = {...fresh, ...extra, Status: status, CompletedAt: status === "Done" ? stamp : "", UpdatedBy: S.me.short, UpdatedAt: stamp};
+    await S.store.session(async () => {
+      await S.store.patch("Tasks", rec);
+      if (status === "Done") closed = await closeOpenSubs(id, stamp);
+      const logs = [logRow(status === "Done" ? "Marked done" : "Updated", id, `Status: "${fresh.Status}" to "${status}"${extra.BlockedReason ? `; BlockedReason: "${extra.BlockedReason.slice(0,60)}"` : ""}`)];
+      if (closed.length) logs.push(logRow("Sub-tasks closed with task", id, `${S.me.short} closed ${closed.length} open sub-task${closed.length===1?"":"s"} when marking the task done: ${closed.map(s => s.SubtaskID).join(", ")}`));
+      await S.store.add("ActivityLog", logs);
+    });
     return true;
   });
-  await refresh(); if (ok){ toast(`${id} marked done.`); if (S.openSheet?.id === id) openTask(id); }
+  await refresh();
+  if (ok){
+    toast(status === "Done" ? `${id} marked done${closed.length ? `, ${closed.length} sub-task${closed.length===1?"":"s"} closed` : ""}.` : `${id} set to ${status}.`);
+    if (S.openSheet?.id === id) openTask(id);
+  }
 }
+
+/* Small status menu that opens from the icon on a card. */
+function openStatusMenu(btn){
+  const menu = $("#stMenu"); const id = btn.dataset.status; const t = taskById(id); if (!t) return;
+  if (menu.classList.contains("open") && menu.dataset.for === id){ closeStatusMenu(); return; }
+  closeStatusMenu();
+  const list = STATUSES.filter(s => s !== "Needs sub-tasks" || t.Status === s);
+  menu.innerHTML = `<div class="mh">${esc(id)} status</div>` + list.map(s => `<button type="button" role="menuitemradio" aria-checked="${s===t.Status}" data-s="${esc(s)}" class="${statusIconClass(s)}">${SICON[s]}<span style="color:var(--text)">${s==="Done"?"Done (closes sub-tasks)":esc(s)}</span></button>`).join("");
+  menu.dataset.for = id; menu.classList.add("open"); btn.setAttribute("aria-expanded","true"); S.menuBtn = btn;
+  const r = btn.getBoundingClientRect(), mw = menu.offsetWidth, mh = menu.offsetHeight;
+  menu.style.left = Math.max(8, Math.min(r.right - mw, innerWidth - mw - 8)) + "px";
+  menu.style.top = (r.bottom + 6 + mh > innerHeight ? Math.max(8, r.top - mh - 6) : r.bottom + 6) + "px";
+  menu.querySelectorAll("[data-s]").forEach(b => b.onclick = () => { closeStatusMenu(); setTaskStatus(id, b.dataset.s); });
+  (menu.querySelector('[aria-checked="true"]') || menu.querySelector("[data-s]")).focus();
+}
+function closeStatusMenu(){
+  const menu = $("#stMenu"); if (!menu.classList.contains("open")) return;
+  menu.classList.remove("open"); menu.dataset.for = "";
+  if (S.menuBtn){ S.menuBtn.setAttribute("aria-expanded","false"); S.menuBtn = null; }
+}
+document.addEventListener("click", e => { if (!e.target.closest("#stMenu") && !e.target.closest("[data-status]")) closeStatusMenu(); });
+document.addEventListener("keydown", e => {
+  const menu = $("#stMenu"); if (!menu.classList.contains("open")) return;
+  if (e.key === "Escape"){ const b = S.menuBtn; closeStatusMenu(); b && b.focus(); }
+  if (e.key === "ArrowDown" || e.key === "ArrowUp"){ e.preventDefault(); const items = [...menu.querySelectorAll("[data-s]")]; const i = items.indexOf(document.activeElement); items[(i + (e.key === "ArrowDown" ? 1 : -1) + items.length) % items.length].focus(); }
+});
+window.addEventListener("scroll", closeStatusMenu, {passive:true});
+window.addEventListener("resize", closeStatusMenu);
 
 async function approve(id, p, checked, cb){
   const t = taskById(id); if (p !== S.me.short){ cb.checked = !checked; return; }
