@@ -299,6 +299,9 @@ button.ck:hover,button.ck:focus-visible{border-color:#2F8F5B;color:#2F8F5B;backg
 .col-head h3 small{font:500 12.5px var(--font-body);opacity:.85}
 .col-head .col-n{margin-left:auto;font-size:13px;font-weight:700;white-space:nowrap;opacity:.95}
 .col-body{padding:14px}
+.col-tools{display:flex;align-items:center;justify-content:flex-end;gap:8px;margin:-4px 0 8px}
+.col-tools label{font:800 11.5px/1 var(--font-head);text-transform:uppercase;letter-spacing:.07em;color:var(--muted)}
+.col-tools select{height:30px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);color:var(--text);padding:0 28px 0 12px;font-size:13px;font-weight:600;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23866' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 11px center;cursor:pointer;max-width:100%}
 .grp-h{display:flex;align-items:center;justify-content:space-between;margin:6px 4px 10px;font:800 12px/1 var(--font-head);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .grp-h .n{font-family:var(--font-body);font-weight:600;letter-spacing:0;text-transform:none}
 .grp+.grp{margin-top:18px}
@@ -444,6 +447,15 @@ dialog::backdrop{background:rgba(22,16,11,.42);backdrop-filter:blur(3px);-webkit
 .subl .t{font-size:14.5px;font-weight:600;line-height:1.35}
 .subl .s{font-size:12.5px;color:var(--muted);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .subl li.done .t{text-decoration:line-through;color:var(--muted)}
+.addsub{margin-top:14px;padding:14px;border-radius:14px;background:var(--surface-2);box-shadow:inset 0 0 0 1px var(--line)}
+.addsub h4{font-size:14px;margin:0 0 10px}
+.addsub-f{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center}
+.addsub-f #as-title{grid-column:1/-1}
+.addsub-f input,.addsub-f select{height:38px;border-radius:10px;border:1px solid var(--line-2);background:var(--surface);color:var(--text);padding:0 10px;font-size:14px;min-width:0}
+.addsub-f input:focus,.addsub-f select:focus{outline:none;border-color:var(--focus);box-shadow:0 0 0 3px color-mix(in srgb,var(--focus) 35%,transparent)}
+.addsub-f .btn{height:38px}
+.addsub .help,.addsub-note{font-size:12px;color:var(--muted);margin:8px 0 0}
+@media (max-width:560px){.addsub-f{grid-template-columns:1fr 1fr}.addsub-f .btn{grid-column:1/-1}}
 .own{display:inline-flex;align-items:center;gap:5px;font-weight:700}
 .own i{width:8px;height:8px;border-radius:50%;background:var(--c)}
 .approvals{display:flex;gap:10px;flex-wrap:wrap}
@@ -596,7 +608,7 @@ const S = {
   mode: "live", store: null, me: null, data: null, loading: true, error: null,
   view: "pending", person: "", showFilters: false, filters: {status:"",domain:"",source:""}, q: "",
   month: null, calMonth: null, lastSync: null, syncing: false, writing: false,
-  showAll: {}, openSheet: null
+  showAll: {}, openSheet: null, sort: {}
 };
 const $ = (s, el=document) => el.querySelector(s);
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -795,6 +807,7 @@ async function boot(){
   if (["light","dark"].includes(params.get("theme"))) document.documentElement.dataset.theme = params.get("theme");
   S.month = todayISO().slice(0,7); S.calMonth = S.month;
   const validView = v => VIEWS.some(x => x[0] === v);
+  try { const so = JSON.parse(localStorage.getItem("kc-sort") || "{}"); if (so && typeof so === "object") S.sort = so; } catch(e){}
   try { const v = sessionStorage.getItem("kc-view2"); if (validView(v)) S.view = v; S.person = sessionStorage.getItem("kc-person") || ""; } catch(e){}
   if (validView(params.get("view"))) S.view = params.get("view");
   if (params.has("preview")){
@@ -929,6 +942,25 @@ function viewPredicate(view){
     default: return {task: () => true, sub: () => true};
   }
 }
+/* Per-column sort. "smart" keeps the original order: open before done, overdue first, then by due date. */
+const SORTS = [["smart","Smart order"],["due","Due date, soonest first"],["dueDesc","Due date, latest first"],["newest","Newest added"],["updated","Recently updated"],["priority","Priority, high first"]];
+const PRI = {High:0, Medium:1, Low:2};
+const byDue = (a, b, dir) => { const x = a.DueDate||"", y = b.DueDate||""; if (!x !== !y) return x ? -1 : 1; return dir * x.localeCompare(y); };
+function sortByMode(list, mode, isSub){
+  const l = list.slice();
+  const subNew = (a, b) => b.SubtaskID.localeCompare(a.SubtaskID);
+  switch (mode){
+    case "due": return l.sort((a,b) => byDue(a,b,1) || (isSub ? a.SubtaskID.localeCompare(b.SubtaskID) : a.TaskID.localeCompare(b.TaskID)));
+    case "dueDesc": return l.sort((a,b) => byDue(a,b,-1) || (isSub ? a.SubtaskID.localeCompare(b.SubtaskID) : a.TaskID.localeCompare(b.TaskID)));
+    case "newest": return l.sort(isSub ? subNew : (a,b) => (b.CreatedAt||"").localeCompare(a.CreatedAt||"") || b.TaskID.localeCompare(a.TaskID));
+    case "updated": return l.sort((a,b) => (b.UpdatedAt||"").localeCompare(a.UpdatedAt||"") || (isSub ? subNew(a,b) : b.TaskID.localeCompare(a.TaskID)));
+    case "priority": return l.sort((a,b) => { const ta = isSub ? taskById(a.TaskID) : a, tb = isSub ? taskById(b.TaskID) : b; return ((PRI[ta?.Priority]??1) - (PRI[tb?.Priority]??1)) || byDue(a,b,1); });
+    default:
+      if (isSub) return l.sort((a,b) => (a.Status==="Done")-(b.Status==="Done") || (a.DueDate||"9").localeCompare(b.DueDate||"9") || a.SubtaskID.localeCompare(b.SubtaskID));
+      return S.view === "done" ? sortTasks(l).sort((a,b) => (b.CompletedAt||"").localeCompare(a.CompletedAt||"")) : sortTasks(l);
+  }
+}
+function setSort(p, mode){ S.sort[p] = mode; try{ localStorage.setItem("kc-sort", JSON.stringify(S.sort)); }catch(e){} }
 function sortTasks(list){
   const pr = {High:0, Medium:1, Low:2};
   return list.slice().sort((a,b) => {
@@ -1126,15 +1158,15 @@ function renderBoard(people, single){
   const visibleTaskIds = new Set(S.data.Tasks.filter(matchesFilters).map(t => t.TaskID));
   let html = `<div class="board ${single?"one":""}">`;
   for (const p of people){
-    let leading = sortTasks(tasks.filter(t => t.Lead === p));
-    if (S.view === "done") leading = leading.sort((a,b) => (b.CompletedAt||"").localeCompare(a.CompletedAt||""));
-    const supporting = S.data.Subtasks.filter(s => s.Owner === p && visibleTaskIds.has(s.TaskID) && taskById(s.TaskID)?.Lead !== p && pred.sub(s));
-    supporting.sort((a,b) => (a.Status==="Done")-(b.Status==="Done") || (a.DueDate||"9").localeCompare(b.DueDate||"9") || a.SubtaskID.localeCompare(b.SubtaskID));
+    const mode = SORTS.some(x => x[0] === S.sort[p]) ? S.sort[p] : "smart";
+    const leading = sortByMode(tasks.filter(t => t.Lead === p), mode, false);
+    const supporting = sortByMode(S.data.Subtasks.filter(s => s.Owner === p && visibleTaskIds.has(s.TaskID) && taskById(s.TaskID)?.Lead !== p && pred.sub(s)), mode, true);
     const limit = S.showAll[p] ? 1e9 : (single ? 30 : 12), slimit = S.showAll[p+"s"] ? 1e9 : (single ? 20 : 5);
     const label = {pending:"pending", overdue:"overdue", done:"completed", all:"tasks"}[S.view] || "tasks";
     html += `<section class="col" style="${pc(p)}" aria-labelledby="h-${p}">
       <div class="col-head">${av(p)}<h3 id="h-${p}">${esc(DISPLAY[p])}${S.me&&S.me.short===p?` <small>(you)</small>`:""}</h3><span class="col-n">${leading.length} ${label}</span></div>
       <div class="col-body">
+        <div class="col-tools"><label for="sort-${p}">Sort</label><select id="sort-${p}" data-sort="${esc(p)}" aria-label="Sort ${esc(DISPLAY[p])}'s tasks">${SORTS.map(([k,l]) => `<option value="${k}" ${k===mode?"selected":""}>${l}</option>`).join("")}</select></div>
         <div class="grp"><div class="grp-h"><span>Leading</span><span class="n">${leading.length}</span></div>
           ${leading.length ? `<div class="rows">${leading.slice(0,limit).map(renderCard).join("")}</div>` : `<div class="empty">${emptyText("lead")}</div>`}
           ${leading.length>limit?`<button type="button" class="btn small more" data-more="${p}">Show all ${leading.length}</button>`:""}</div>
@@ -1209,6 +1241,7 @@ function wireMain(){
   const main = $("#main");
   main.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { setView(b.dataset.view); render(); });
   main.querySelectorAll("[data-filter]").forEach(s => s.onchange = () => { S.filters[s.dataset.filter] = s.value; render(); });
+  main.querySelectorAll("[data-sort]").forEach(s => s.onchange = () => { setSort(s.dataset.sort, s.value); render(); });
   main.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openTask(b.dataset.open));
   main.querySelectorAll("[data-status]:not(:disabled)").forEach(b => b.onclick = e => { e.stopPropagation(); openStatusMenu(b); });
   main.querySelectorAll("[data-more]").forEach(b => b.onclick = () => { S.showAll[b.dataset.more] = true; render(); });
@@ -1268,7 +1301,16 @@ function openTask(id){
       ${t.AllPartnerApproval==="Yes"?`<div class="sec"><h3>All-partner approval</h3><div class="approvals">${ORDER.map(p => `<label class="appr" style="--c:var(--${PKEY[p]})"><input type="checkbox" data-approve="${p}" ${t["Approved"+p]==="Yes"?"checked":""} ${S.me.short!==p||!canWrite?"disabled":""}> ${esc(DISPLAY[p])} ${t["Approved"+p]==="Yes"?"approved":"pending"}</label>`).join("")}</div><p class="help" style="font-size:12px;color:var(--muted)">This task changes ownership, debt, partners or brand, so all three partners approve it. Each partner ticks their own box.</p></div>`:""}
       <div class="sec"><h3>Sub-tasks ${subs.length?`(${subs.filter(s=>s.Status==="Done").length} of ${subs.length} done)`:""}</h3>
         ${subs.length?`<ul class="subl">${subs.map(s => `<li class="${s.Status==="Done"?"done":""}"><input type="checkbox" id="cb-${esc(s.SubtaskID)}" data-sub="${esc(s.SubtaskID)}" ${s.Status==="Done"?"checked":""} ${S.me.short!==s.Owner||!canWrite?"disabled":""} aria-describedby="sd-${esc(s.SubtaskID)}" title="${S.me.short!==s.Owner?`Only ${esc(DISPLAY[s.Owner])} can tick this`:"Mark done"}"><div><label class="t" for="cb-${esc(s.SubtaskID)}">${esc(s.Title)}</label><div class="s" id="sd-${esc(s.SubtaskID)}"><span class="own" style="--c:var(--${PKEY[s.Owner]})"><i></i>${esc(DISPLAY[s.Owner])}</span><span>${esc(s.SubtaskID)}</span>${s.DueDate?`<span>Due ${fmtDate(s.DueDate)}</span>`:""}<span>${esc(s.Status)}</span></div></div></li>`).join("")}</ul>`
-          :`<div class="empty">No sub-tasks yet. The intake agent writes them on request ("fill sub-tasks").</div>`}
+          :`<div class="empty">No sub-tasks yet. Add one below, or ask the intake agent to "fill sub-tasks".</div>`}
+        ${t.Status==="Done" ? `<p class="help addsub-note">This task is done. ${S.me.short===t.Lead?"Change its status":`${esc(DISPLAY[t.Lead])}, the lead, can change its status`} to add more sub-tasks.</p>` : `<div class="addsub" role="group" aria-labelledby="addsubH">
+          <h4 id="addsubH">Add a sub-task</h4>
+          <div class="addsub-f">
+            <label class="sr-only" for="as-title">Sub-task</label><input id="as-title" placeholder="What needs to be done?" maxlength="250" ${canWrite?"":"disabled"}>
+            <label class="sr-only" for="as-owner">Owner</label><select id="as-owner" ${canWrite?"":"disabled"}>${ORDER.map(p => `<option value="${esc(p)}" ${p===S.me.short?"selected":""}>${esc(DISPLAY[p])}${p===S.me.short?" (you)":""}</option>`).join("")}</select>
+            <label class="sr-only" for="as-due">Due date (optional)</label><input id="as-due" type="date" min="${todayISO()}" title="Due date (optional)" ${canWrite?"":"disabled"}>
+            <button type="button" class="btn small primary" id="as-add" ${canWrite?"":"disabled"}>Add</button>
+          </div>
+          <p class="help">Any partner can add a sub-task and give it to any partner. The owner ticks it when done.</p></div>`}
       </div>
       <div class="sec"><h3>Details</h3><div class="fields">
         <div class="fld full"><label for="e-Title">Title</label><input id="e-Title" name="Title" value="${esc(t.Title)}" required></div>
@@ -1291,6 +1333,11 @@ function openTask(id){
   sheet.querySelectorAll("[data-close]").forEach(b => b.onclick = () => sheet.close());
   sheet.querySelectorAll("[data-sub]").forEach(cb => cb.onchange = () => toggleSub(cb.dataset.sub, cb.checked, cb));
   sheet.querySelectorAll("[data-approve]").forEach(cb => cb.onchange = () => approve(id, cb.dataset.approve, cb.checked, cb));
+  const asAdd = sheet.querySelector("#as-add");
+  if (asAdd){
+    asAdd.onclick = () => addSubtask(id);
+    sheet.querySelector("#as-title").onkeydown = e => { if (e.key === "Enter"){ e.preventDefault(); addSubtask(id); } };
+  }
   const form = $("#taskForm");
   form.querySelectorAll('input[name="Support"]').forEach(cb => cb.onchange = () => limitSupport(form));
   form.onsubmit = e => { e.preventDefault(); saveTask(id, form); };
@@ -1389,6 +1436,39 @@ async function toggleSub(sid, checked, cb){
       else toast(`All sub-tasks are done. ${DISPLAY[t.Lead]} can now mark the task done.`);
     } else toast(`${sid} marked done.`);
   }
+}
+
+/* Any partner can add a sub-task to any task and assign it to any partner. */
+async function addSubtask(id){
+  const sheet = $("#sheet");
+  const titleEl = sheet.querySelector("#as-title"), ownerEl = sheet.querySelector("#as-owner"), dueEl = sheet.querySelector("#as-due"), btn = sheet.querySelector("#as-add");
+  const title = clean(titleEl.value), owner = ownerEl.value, due = dueEl.value;
+  if (!title){ toast("Write the sub-task first."); titleEl.focus(); return; }
+  if (!ORDER.includes(owner)){ toast("Pick an owner."); ownerEl.focus(); return; }
+  if (due && due < todayISO()){ toast("The due date is before today."); dueEl.focus(); return; }
+  const t = taskById(id); if (!t) return;
+  btn.disabled = true;
+  let newId = null;
+  const ok = await guarded(async () => {
+    await S.store.session(async () => {
+      const fresh = (await S.store.readTable("Tasks")).find(x => x.TaskID === id);
+      if (!fresh) throw new Error(`${id} was removed from the workbook.`);
+      if (fresh.Status === "Done") throw new Error(`${id} was marked done by someone else. Reopen it first.`);
+      const mine = (await S.store.readTable("Subtasks")).filter(x => x.TaskID === id);
+      const n = Math.max(0, ...mine.map(x => +x.Order || 0), ...mine.map(x => +((x.SubtaskID||"").match(/-(\d+)$/)||[0,0])[1])) + 1;
+      newId = `${id}-${pad(n)}`;
+      const stamp = nowStamp();
+      await S.store.add("Subtasks", [{SubtaskID:newId, TaskID:id, Order:n, Title:title, Owner:owner, DueDate:due||"", Status:"Not started", UpdatedBy:S.me.short, UpdatedAt:stamp, CompletedAt:""}]);
+      if (fresh.Status === "Needs sub-tasks") await S.store.patch("Tasks", {...fresh, Status:"Not started", UpdatedBy:S.me.short, UpdatedAt:stamp});
+      await S.store.add("ActivityLog", [logRow("Sub-task added", id, `${newId} ${title} | owner ${owner}${due?` | due ${due}`:""}`)]);
+    });
+    return true;
+  });
+  await refresh();
+  if (ok){
+    toast(`${newId} added for ${DISPLAY[owner]||owner}.`);
+    if (S.openSheet?.id === id){ openTask(id); $("#sheet").querySelector("#as-title")?.focus(); }
+  } else if (btn.isConnected) btn.disabled = false;
 }
 
 async function quickDone(id){ await setTaskStatus(id, "Done"); }
