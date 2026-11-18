@@ -124,13 +124,126 @@ button,input,select,textarea{font:inherit;color:inherit}
 .av-z{--c:var(--z)} .av-a{--c:var(--a)} .av-n{--c:var(--n)}
 
 /* ---------- nav ---------- */
-.nav{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:18px 0 6px}
+.nav{display:flex;flex-direction:column;gap:12px;padding:22px 0 4px}
+.nav-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.tabs button{height:38px;padding:0 16px;font-size:15px}
+.seg .count.bad{color:#fff;background:var(--danger);border-radius:999px;padding:1px 7px;font-weight:700}
+.extra{display:flex;gap:4px;margin-left:auto;flex-wrap:wrap}
+.extra button{border:0;background:none;height:34px;padding:0 12px;border-radius:999px;font-size:13.5px;font-weight:600;color:var(--text-2);cursor:pointer}
+.extra button:hover{background:var(--sunken)}
+.extra button[aria-pressed="true"],.extra button[aria-expanded="true"]{background:var(--surface);color:var(--text);box-shadow:inset 0 0 0 1px var(--line-2)}
+.extra .count{font-size:11.5px;background:var(--espresso);color:var(--cream);border-radius:999px;padding:1px 6px;margin-left:2px}
+.people{display:flex;align-items:center;gap:8px;overflow-x:auto;scrollbar-width:none;padding:2px}
+.people::-webkit-scrollbar{display:none}
+.people .lbl{font:800 11.5px/1 var(--font-head);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-right:2px;white-space:nowrap}
+.people button{--c:var(--espresso);display:inline-flex;align-items:center;gap:8px;height:34px;padding:0 14px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);cursor:pointer;font-size:13.5px;font-weight:600;white-space:nowrap;color:var(--text-2);flex:none}
+.people button .av{margin-left:-8px}
+.people button small{font-weight:500;color:var(--muted)}
+.people button[aria-pressed="true"]{border-color:var(--c);box-shadow:inset 0 0 0 1px var(--c);color:var(--text);background:color-mix(in srgb,var(--c) 9%,var(--surface))}
+@media (max-width:820px){.extra{margin-left:0}.tabs{width:100%}.tabs button{flex:1;padding:0 8px;font-size:14px}}
+
+/* ---------- overview: who has what ---------- */
+.ov{background:var(--surface);border-radius:var(--radius);box-shadow:var(--shadow-1);margin:20px 0 0;overflow:hidden}
+.ov-h{display:flex;align-items:baseline;gap:6px 14px;padding:16px 20px 4px;flex-wrap:wrap}
+.ov-h h2{font-size:20px}
+.ov-h p{margin:0;color:var(--muted);font-size:13px}
+.ov table{width:100%;border-collapse:collapse}
+.ov th{font:800 11.5px/1 var(--font-head);text-transform:uppercase;letter-spacing:.07em;color:var(--muted);text-align:center;padding:12px 8px 8px}
+.ov td{padding:6px 8px;border-top:1px solid var(--line);text-align:center;vertical-align:middle}
+.ov td:first-child{text-align:left;padding-left:16px;width:34%}
+.ov tr.sel td{background:color-mix(in srgb,var(--c) 8%,var(--surface))}
+.ov tr.sel td:first-child{box-shadow:inset 4px 0 0 var(--c)}
+.ov .who{display:flex;align-items:center;gap:12px;border:0;background:none;padding:6px 8px 6px 4px;cursor:pointer;text-align:left;color:inherit;border-radius:12px;min-width:0}
+.ov button.who:hover{background:var(--sunken)}
+.ov .who b{display:block;font:800 15.5px/1.25 var(--font-head)}
+.ov .who b .you{display:inline;font:500 12px var(--font-body);color:var(--muted)}
+.ov .who small{display:block;font-size:12px;color:var(--muted);margin-top:1px}
+.ov .team-av{--c:var(--line-2);font-size:10.5px}
+.ov .num{border:0;background:none;cursor:pointer;font:800 24px/1 var(--font-head);letter-spacing:-.02em;padding:9px 12px;border-radius:12px;min-width:60px;color:var(--text);transition:background .15s}
+.ov .num:hover{background:var(--sunken)}
+.ov .num.zero{color:var(--muted);opacity:.55;font-weight:700}
+.ov .num.bad{color:var(--danger)}
+.ov .num.good{color:#2F8F5B}
+.ov .pbar{display:flex;align-items:center;gap:10px;justify-content:flex-end;padding-right:12px}
+.ov .pbar .bar{width:110px;margin:0}
+.ov .pbar .bar i{background:#2F8F5B}
+.ov .pbar span{font:800 13px var(--font-head);min-width:36px;text-align:right;color:var(--text-2)}
+.ov tr.team td{background:var(--surface-2)}
+.ov tr.team .num{font-size:20px}
+@media (max-width:900px){.ov .pc{display:none}}
+@media (max-width:640px){
+  .ov thead{display:none}
+  .ov tr{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--line);padding:8px 8px 10px}
+  .ov td{border:0;padding:0}
+  .ov td:first-child{grid-column:1/-1;width:auto;padding:0 0 4px}
+  .ov .num{font-size:21px;padding:6px 4px 2px;min-width:0;width:100%}
+  .ov td[data-l]::after{content:attr(data-l);display:block;font-size:11px;font-weight:600;color:var(--muted)}
+}
+
+/* ---------- task rows ---------- */
+.rows{background:var(--surface);border-radius:14px;box-shadow:var(--shadow-1);overflow:hidden}
+.row{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:10px;align-items:start;padding:12px 12px 12px 12px;border-top:1px solid var(--line);position:relative;transition:background .15s}
+.row:first-child{border-top:0}
+.row:hover{background:color-mix(in srgb,var(--sunken) 55%,var(--surface))}
+.row-main{border:0;background:none;padding:0;text-align:left;cursor:pointer;min-width:0;color:inherit;display:block;border-radius:6px}
+.row-main .t{display:block;font:700 15px/1.32 var(--font-head);color:var(--text)}
+.row-main .m{display:flex;flex-wrap:wrap;align-items:center;gap:3px 12px;margin-top:4px;font-size:12.5px;color:var(--muted)}
+.row-main .m .due{font-weight:600;color:var(--text-2)}
+.row-main .m .due.over{color:var(--danger)}
+.row-main .m .due.soon{color:var(--warn-text)}
+.row-main .m .due.orig{color:var(--muted);font-weight:500}
+.row-main .m .due svg{width:13px;height:13px}
+.row-main .m .wait{color:var(--danger);font-weight:600}
+.row-main .m .with{display:inline-flex;align-items:center;gap:7px}
+.row-main .m .tid{font:600 11px/1 ui-monospace,"SF Mono",Menlo,monospace;color:var(--muted);opacity:.8}
+.row-main .m .for{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%}
+.row-main .m .ft{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+.row-main .m .chip{flex:none;font:800 10px/1 var(--font-head);padding:3px 5px;border-radius:5px;background:var(--c);color:var(--on)}
+.row.done .t{text-decoration:line-through;text-decoration-color:var(--line-2);color:var(--muted)}
+.row .st-btn{position:static;margin-top:-1px}
+.av.xs{width:20px;height:20px;font-size:9px;box-shadow:0 0 0 1.5px var(--c),0 0 0 3px var(--surface)}
+.ck{width:24px;height:24px;border-radius:50%;border:2px solid var(--line-2);background:var(--surface);display:grid;place-items:center;padding:0;margin-top:0;color:transparent;cursor:pointer;transition:border-color .15s,color .15s,background .15s}
+.ck svg{width:14px;height:14px}
+button.ck:hover,button.ck:focus-visible{border-color:#2F8F5B;color:#2F8F5B;background:color-mix(in srgb,#2F8F5B 10%,var(--surface))}
+.ck.on{background:#2F8F5B;border-color:#2F8F5B;color:#fff}
+.ck.off{border-style:dashed;opacity:.5;cursor:default}
+.sq{position:relative;width:22px;height:22px;margin:1px 0 0 1px;cursor:pointer}
+.sq input{position:absolute;inset:0;opacity:0;margin:0;cursor:inherit}
+.sq span{position:absolute;inset:0;border-radius:6px;border:2px solid var(--line-2);background:var(--surface);display:grid;place-items:center;color:transparent;pointer-events:none;transition:all .15s}
+.sq span svg{width:13px;height:13px}
+.sq:hover input:not(:disabled)+span{border-color:#2F8F5B;color:#2F8F5B}
+.sq input:checked+span{background:#2F8F5B;border-color:#2F8F5B;color:#fff}
+.sq input:focus-visible+span{outline:3px solid var(--focus);outline-offset:2px}
+.sq.off{cursor:default}
+.sq.off span{border-style:dashed;opacity:.5}
+.sq.off input:checked+span{opacity:.7;border-style:solid}
+.row.sub{grid-template-columns:26px minmax(0,1fr)}
+.row.sub .t{font:600 14px/1.35 var(--font-body)}
+.cal-day-list{padding:14px 16px;border-top:1px solid var(--line)}
+.cal-day-list h4{font-size:14px;margin:0 0 8px;color:var(--text-2)}
+@media (max-width:760px){.cal-day-list{display:none}}
+@media (max-width:640px){
+  .ov tr.team{background:var(--surface-2)}
+  .ov tr.team td{background:none}
+  .row{grid-template-columns:26px minmax(0,1fr);grid-template-areas:"ck main" "ck st"}
+  .row>.ck,.row>.sq{grid-area:ck}
+  .row>.row-main{grid-area:main}
+  .row>.st-btn{grid-area:st;justify-self:start;margin-top:2px}
+  .row.sub{grid-template-areas:"ck main"}
+  .extra{flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;width:100%;gap:2px}
+  .extra::-webkit-scrollbar{display:none}
+  .extra button{padding:0 10px;flex:none;font-size:13px}
+}
+@media (max-width:480px){
+  .tabs button{flex-direction:column;height:50px;padding:0 4px;gap:1px;line-height:1.1;font-size:13.5px;display:flex;align-items:center;justify-content:center}
+  .tabs .count{margin-left:0}
+}
 .seg{display:flex;gap:2px;padding:4px;background:var(--sunken);border-radius:999px;overflow-x:auto;scrollbar-width:none;max-width:100%;min-width:0;flex:0 1 auto}
 .seg::-webkit-scrollbar{display:none}
 .seg button{border:0;background:transparent;height:34px;padding:0 14px;border-radius:999px;cursor:pointer;font-weight:600;font-size:14px;color:var(--text-2);white-space:nowrap;transition:background .2s,color .2s}
 .seg button[aria-pressed="true"]{background:var(--surface);color:var(--text);box-shadow:var(--shadow-1)}
 .seg .count{font-size:12px;color:var(--muted);margin-left:4px}
-.filters{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+.filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
 .filters select{height:34px;border-radius:999px;border:1px solid var(--line-2);background:var(--surface);padding:0 30px 0 12px;font-size:13px;appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M1 1l4 4 4-4' fill='none' stroke='%23866' stroke-width='1.5'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 12px center;cursor:pointer;max-width:200px}
 @media (max-width:820px){.filters{margin-left:0;width:100%}.filters select{flex:1 1 40%;max-width:none}}
 
@@ -180,10 +293,11 @@ button,input,select,textarea{font:inherit;color:inherit}
 .board.one{grid-template-columns:minmax(0,760px)}
 @media (max-width:1100px){.board{grid-template-columns:1fr}}
 .col{background:var(--surface-2);border-radius:22px;overflow:hidden;box-shadow:inset 0 0 0 1px var(--line)}
-.col-head{background:var(--c);color:var(--on);padding:16px 18px;display:flex;align-items:center;gap:12px;position:relative}
+.col-head{background:var(--c);color:var(--on);padding:12px 16px;display:flex;align-items:center;gap:12px;position:relative}
 .col-head .av{box-shadow:0 0 0 2.5px var(--on),0 0 0 4px var(--c)}
-.col-head h3{font-size:18px;color:var(--on)}
-.col-head p{margin:0;font-size:12.5px;opacity:.92;color:var(--on)}
+.col-head h3{font-size:17px;color:var(--on);min-width:0}
+.col-head h3 small{font:500 12.5px var(--font-body);opacity:.85}
+.col-head .col-n{margin-left:auto;font-size:13px;font-weight:700;white-space:nowrap;opacity:.95}
 .col-body{padding:14px}
 .grp-h{display:flex;align-items:center;justify-content:space-between;margin:6px 4px 10px;font:800 12px/1 var(--font-head);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
 .grp-h .n{font-family:var(--font-body);font-weight:600;letter-spacing:0;text-transform:none}
@@ -191,15 +305,8 @@ button,input,select,textarea{font:inherit;color:inherit}
 .empty{padding:18px;border-radius:var(--radius-s);border:1.5px dashed var(--line-2);color:var(--muted);font-size:13.5px;text-align:center}
 
 /* ---------- cards ---------- */
-.card{--accent:var(--muted);position:relative;background:var(--surface);border-radius:16px;box-shadow:var(--shadow-1);padding:14px 16px 14px 19px;cursor:pointer;transition:transform .22s var(--ease),box-shadow .22s var(--ease);display:block;width:100%;text-align:left;border:0}
-.card::before{content:"";position:absolute;left:0;top:12px;bottom:12px;width:4px;border-radius:0 4px 4px 0;background:var(--accent)}
-.card:hover{transform:translateY(-2px);box-shadow:var(--shadow-2)}
-.card+.card{margin-top:10px}
-.card.done{opacity:.62}
-.card.done h4{text-decoration:line-through;text-decoration-color:var(--line-2)}
 .card-top{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:6px}
 .tid{font:700 11.5px/1 ui-monospace,"SF Mono",Menlo,monospace;color:var(--muted);margin-right:2px}
-.card h4{font-size:15.5px;font-weight:700;line-height:1.3;margin-bottom:8px}
 .pill{display:inline-flex;align-items:center;gap:5px;height:22px;padding:0 9px;border-radius:999px;font-size:11.5px;font-weight:700;background:var(--sunken);color:var(--text-2);white-space:nowrap}
 .pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor;opacity:.8}
 .st-progress{background:var(--ok-bg);color:var(--ok-text)}
@@ -208,11 +315,6 @@ button,input,select,textarea{font:inherit;color:inherit}
 .st-done::before{content:"\2713";width:auto;height:auto;background:none;opacity:1;font-size:11px}
 .st-confirm{background:var(--warn-bg);color:var(--warn-text)}
 .st-needs{background:transparent;box-shadow:inset 0 0 0 1.5px var(--line-2);color:var(--text-2)}
-/* quick status icon on each card (lead only) */
-.card-wrap{position:relative}
-.card-wrap+.card-wrap{margin-top:10px}
-.cards-grid .card-wrap+.card-wrap{margin-top:0}
-.card-wrap .card-top{padding-right:128px;min-height:28px;margin-bottom:4px}
 .st-btn{position:absolute;top:12px;right:12px;z-index:2;border:0;background:none;padding:0;cursor:pointer;border-radius:999px;transition:transform .15s var(--ease),filter .15s}
 .st-btn:hover:not(:disabled),.st-btn[aria-expanded="true"]{transform:translateY(-1px);filter:brightness(1.06) saturate(1.08)}
 .st-btn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
@@ -261,7 +363,6 @@ button,input,select,textarea{font:inherit;color:inherit}
 .prog.big .bar{flex:1 1 160px;height:8px}
 .prog.big .subcount{font-size:12.5px;color:var(--muted)}
 .bar i{display:block;height:100%;border-radius:inherit;background:var(--accent);transition:width .6s var(--ease)}
-.card-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:8px}
 .subcount{font-size:12px;color:var(--muted)}
 .apa{display:inline-flex;align-items:center;gap:6px;font-size:11.5px;font-weight:700;color:var(--text-2);background:var(--sunken);border-radius:999px;padding:3px 9px 3px 8px}
 .ticks{display:inline-flex;gap:3px}
@@ -269,22 +370,9 @@ button,input,select,textarea{font:inherit;color:inherit}
 .tick.on{background:var(--c)}
 .tick.on.a{color:var(--espresso)}
 .src{font-size:11.5px;color:var(--muted);margin-top:6px}
-.sub-row{display:flex;gap:10px;align-items:flex-start;background:var(--surface);border-radius:14px;box-shadow:var(--shadow-1);padding:11px 12px;cursor:pointer;border:0;width:100%;text-align:left;transition:transform .2s var(--ease)}
-.sub-row:hover{transform:translateY(-1px)}
-.sub-row+.sub-row{margin-top:8px}
-.sub-row .chip{flex:none;font:800 10.5px/1 var(--font-head);padding:5px 7px;border-radius:7px;background:var(--c);color:var(--on);margin-top:1px}
-.sub-row .t{font-size:13.5px;font-weight:600;line-height:1.35}
-.sub-row .s{font-size:12px;color:var(--muted);margin-top:3px}
-.sub-row.done .t{text-decoration:line-through;color:var(--muted)}
 .more{display:block;margin:10px auto 0;font-size:13px}
 
 /* ---------- list views ---------- */
-.list-view{margin:24px 0 60px}
-.month-group{margin-bottom:26px}
-.month-group h3{font-size:18px;margin:0 0 10px;display:flex;gap:10px;align-items:baseline}
-.month-group h3 span{font:500 13px var(--font-body);color:var(--muted)}
-.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:12px}
-.cards-grid .card+.card{margin-top:0}
 
 /* ---------- calendar ---------- */
 .cal{margin:24px 0 60px;background:var(--surface);border-radius:22px;box-shadow:var(--shadow-1);overflow:hidden}
@@ -480,7 +568,10 @@ const DOMAINS = ["Finance & Governance","Operations & Growth","Digital & Brand",
 const STATUSES = ["Not started","In progress","Blocked","Done","To confirm","Needs sub-tasks"];
 const PRIORITIES = ["High","Medium","Low"];
 const RECURRENCES = ["None","Weekly","Monthly","Quarterly"];
-const VIEWS = [["all","All"],["mine","My tasks"],["overdue","Overdue"],["week","This week"],["month","By month"],["done","Done"],["calendar","Calendar"],["decisions","Decisions"]];
+/* Main tabs answer three questions: what is pending, what is completed, who it is assigned to (person chips). */
+const TABS = [["pending","Pending"],["overdue","Overdue"],["done","Completed"],["all","All"]];
+const EXTRA_VIEWS = [["calendar","Calendar"],["decisions","Decisions"],["score","Monthly score"]];
+const VIEWS = [...TABS, ...EXTRA_VIEWS];
 
 /* ---------- keyword map for suggested lead and support (from the duty matrix) ---------- */
 const KEYWORDS = {
@@ -503,7 +594,7 @@ const STARTERS = {
 /* ---------- state ---------- */
 const S = {
   mode: "live", store: null, me: null, data: null, loading: true, error: null,
-  view: "all", filters: {partner:"",status:"",domain:"",source:""}, q: "",
+  view: "pending", person: "", showFilters: false, filters: {status:"",domain:"",source:""}, q: "",
   month: null, calMonth: null, lastSync: null, syncing: false, writing: false,
   showAll: {}, openSheet: null
 };
@@ -703,8 +794,9 @@ async function boot(){
   const params = new URLSearchParams(location.search);
   if (["light","dark"].includes(params.get("theme"))) document.documentElement.dataset.theme = params.get("theme");
   S.month = todayISO().slice(0,7); S.calMonth = S.month;
-  if (params.get("view") && VIEWS.some(v => v[0] === params.get("view"))) S.view = params.get("view");
-  try { const v = sessionStorage.getItem("kc-view"); if (v) S.view = v; } catch(e){}
+  const validView = v => VIEWS.some(x => x[0] === v);
+  try { const v = sessionStorage.getItem("kc-view2"); if (validView(v)) S.view = v; S.person = sessionStorage.getItem("kc-person") || ""; } catch(e){}
+  if (validView(params.get("view"))) S.view = params.get("view");
   if (params.has("preview")){
     S.mode = "preview";
     const kind = params.get("preview") || "seed";
@@ -820,7 +912,6 @@ function matchesFilters(t){
   if (f.status && t.Status !== f.status) return false;
   if (f.domain && t.Domain !== f.domain) return false;
   if (f.source && !t.Source.startsWith(f.source)) return false;
-  if (f.partner && t.Lead !== f.partner && !supports(t).includes(f.partner)) return false;
   if (S.q){
     const q = S.q.toLowerCase();
     const hay = [t.TaskID, t.Title, t.Description, t.Notes, t.Source, t.Lead, t.Support].join(" ").toLowerCase();
@@ -830,10 +921,10 @@ function matchesFilters(t){
   return true;
 }
 function viewPredicate(view){
-  const t0 = todayISO(), wk = addDays(t0, 6);
+  const t0 = todayISO();
   switch(view){
+    case "pending": return {task: t => t.Status !== "Done", sub: s => s.Status !== "Done"};
     case "overdue": return {task: isOverdue, sub: s => s.DueDate && s.DueDate < t0 && !["Done","To confirm"].includes(s.Status)};
-    case "week": return {task: t => t.Status !== "Done" && t.DueDate >= t0 && t.DueDate <= wk, sub: s => s.Status !== "Done" && s.DueDate >= t0 && s.DueDate <= wk};
     case "done": return {task: t => t.Status === "Done", sub: s => s.Status === "Done"};
     default: return {task: () => true, sub: () => true};
   }
@@ -884,14 +975,18 @@ function render(){
   if (S.testItem) html += `<div class="banner warn" role="note"><div><b>Test workbook.</b> This page is connected to the test copy, not the real partner workbook.</div></div>`;
   if (!navigator.onLine) html += `<div class="banner warn" role="status"><div><b>You are offline.</b> You can read what was last loaded. Changes cannot be saved until you reconnect.</div></div>`;
   if (S.error) html += `<div class="banner err" role="alert"><div><b>Could not refresh.</b> ${esc(S.error)}</div></div>`;
-  html += `<nav class="nav" aria-label="Views"><div class="seg" role="group" aria-label="View">${VIEWS.map(([k,l]) => `<button type="button" data-view="${k}" aria-pressed="${S.view===k}">${l}${counts[k]!=null?`<span class="count">${counts[k]}</span>`:""}</button>`).join("")}</div>`;
-  html += renderFilters() + `</nav>`;
-  if (!["calendar","decisions"].includes(S.view)) html += renderSummary();
-  if (S.view === "month") html += renderByMonth();
+  if (S.person && !ORDER.includes(S.person)) S.person = "";
+  const isTab = TABS.some(([k]) => k === S.view);
+  if (isTab) html += renderOverview();
+  html += `<nav class="nav" aria-label="Views"><div class="nav-row">
+    <div class="seg tabs" role="group" aria-label="Show">${TABS.map(([k,l]) => `<button type="button" data-view="${k}" aria-pressed="${S.view===k}">${l}<span class="count ${k==="overdue"&&counts[k]?"bad":""}">${counts[k]}</span></button>`).join("")}</div>
+    <div class="extra" role="group" aria-label="More views">${EXTRA_VIEWS.map(([k,l]) => `<button type="button" data-view="${k}" aria-pressed="${S.view===k}">${l}</button>`).join("")}<button type="button" data-act="filters" aria-expanded="${S.showFilters}">Filters${activeFilters()?` <span class="count">${activeFilters()}</span>`:""}</button></div></div>
+    ${S.view === "decisions" || S.view === "score" ? "" : `<div class="people" role="group" aria-label="Assigned to"><span class="lbl">Assigned to</span><button type="button" data-person="" aria-pressed="${!S.person}">Everyone</button>${ORDER.map(p => `<button type="button" data-person="${esc(p)}" aria-pressed="${S.person===p}" style="${pc(p)}">${av(p,"sm")}<span>${esc(DISPLAY[p])}${S.me&&S.me.short===p?` <small>(you)</small>`:""}</span></button>`).join("")}</div>`}
+    ${S.showFilters ? renderFilters() : ""}</nav>`;
+  if (S.view === "score") html += renderSummary();
   else if (S.view === "calendar") html += renderCalendar();
   else if (S.view === "decisions") html += renderDecisions();
-  else if (S.view === "mine") html += renderBoard([S.me.short], true);
-  else html += renderBoard(S.filters.partner ? [S.filters.partner] : ORDER, !!S.filters.partner);
+  else html += renderBoard(S.person ? [S.person] : ORDER, !!S.person);
   html += `<footer class="foot"><span>Private to the partners. Data stays in the shared Microsoft 365 workbook.</span><span><button type="button" data-act="theme">Appearance: ${themeLabel()}</button></span></footer></div>`;
   main.innerHTML = html;
   wireMain();
@@ -904,16 +999,45 @@ function render(){
 }
 
 function viewCounts(){
-  const T = S.data.Tasks.filter(matchesFilters);
-  return {all: T.length, mine: S.me ? T.filter(t => t.Lead === S.me.short || supports(t).includes(S.me.short)).length : null,
-    overdue: T.filter(isOverdue).length, week: T.filter(viewPredicate("week").task).length, done: T.filter(t => t.Status==="Done").length,
-    decisions: S.data.Decisions.length};
+  /* Tab counts are tasks only, for the chosen person (as lead) or for everyone. */
+  const T = S.data.Tasks.filter(matchesFilters).filter(t => !S.person || t.Lead === S.person);
+  const c = {}; TABS.forEach(([k]) => c[k] = T.filter(viewPredicate(k).task).length);
+  return c;
 }
+const activeFilters = () => Object.values(S.filters).filter(Boolean).length;
 
 function renderFilters(){
   const sources = [...new Set(S.data.Tasks.map(t => (t.Source||"").split(";")[0].trim()).filter(Boolean))].sort();
   const sel = (id, label, opts, val) => `<label class="sr-only" for="f-${id}">${label}</label><select id="f-${id}" data-filter="${id}"><option value="">${label}</option>${opts.map(o => `<option value="${esc(o[0]??o)}" ${val===(o[0]??o)?"selected":""}>${esc(o[1]??o)}</option>`).join("")}</select>`;
-  return `<div class="filters">${sel("partner","All partners",ORDER.map(p=>[p,DISPLAY[p]]),S.filters.partner)}${sel("status","Any status",STATUSES,S.filters.status)}${sel("domain","Any domain",DOMAINS,S.filters.domain)}${sel("source","Any source",sources,S.filters.source)}</div>`;
+  return `<div class="filters">${sel("status","Any status",STATUSES,S.filters.status)}${sel("domain","Any domain",DOMAINS,S.filters.domain)}${sel("source","Any source",sources,S.filters.source)}${activeFilters()?`<button type="button" class="btn small ghost" data-act="clearf">Clear filters</button>`:""}</div>`;
+}
+
+/* "Who has what": one row per partner, counting the tasks they lead. Assigned = Pending + Completed. */
+function renderOverview(){
+  const T = S.data.Tasks;
+  const row = list => ({assigned: list.length, pending: list.filter(t => t.Status !== "Done").length, overdue: list.filter(isOverdue).length, done: list.filter(t => t.Status === "Done").length});
+  const num = (n, view, p, label, cls="") => `<button type="button" class="num ${n?cls:"zero"}" data-go="${view}" data-p="${esc(p)}" aria-label="${esc(label)}">${n}</button>`;
+  const pct = r => r.assigned ? Math.round(r.done / r.assigned * 100) : 0;
+  let body = "";
+  for (const p of ORDER){
+    const r = row(T.filter(t => t.Lead === p));
+    const helping = S.data.Subtasks.filter(s => s.Owner === p && s.Status !== "Done" && taskById(s.TaskID) && taskById(s.TaskID).Lead !== p).length;
+    const name = DISPLAY[p];
+    body += `<tr class="${S.person===p?"sel":""}" style="${pc(p)}">
+      <td><button type="button" class="who" data-person="${esc(p)}" aria-pressed="${S.person===p}">${av(p)}<span><b>${esc(name)}${S.me&&S.me.short===p?` <small class="you">(you)</small>`:""}</b><small>${helping?`Also helping on ${helping} open sub-task${helping===1?"":"s"}`:"No open sub-tasks on other tasks"}</small></span></button></td>
+      <td data-l="Assigned">${num(r.assigned,"all",p,`${name}: ${r.assigned} assigned tasks`)}</td>
+      <td data-l="Pending">${num(r.pending,"pending",p,`${name}: ${r.pending} pending`)}</td>
+      <td data-l="Overdue">${num(r.overdue,"overdue",p,`${name}: ${r.overdue} overdue`,"bad")}</td>
+      <td data-l="Completed">${num(r.done,"done",p,`${name}: ${r.done} completed`,"good")}</td>
+      <td class="pc"><div class="pbar" style="--accent:var(--ok-text)">${progressBar(pct(r), `${name}: ${pct(r)}% of assigned tasks completed`)}<span>${pct(r)}%</span></div></td></tr>`;
+  }
+  const tr = row(T);
+  body += `<tr class="team"><td><span class="who static"><span class="av team-av" aria-hidden="true">All</span><span><b>Team total</b><small>${S.data.Subtasks.filter(s => s.Status !== "Done").length} open sub-tasks in all</small></span></span></td>
+    <td data-l="Assigned">${num(tr.assigned,"all","","Team: all tasks")}</td><td data-l="Pending">${num(tr.pending,"pending","","Team: pending")}</td>
+    <td data-l="Overdue">${num(tr.overdue,"overdue","","Team: overdue","bad")}</td><td data-l="Completed">${num(tr.done,"done","","Team: completed","good")}</td>
+    <td class="pc"><div class="pbar" style="--accent:var(--ok-text)">${progressBar(pct(tr), `Team: ${pct(tr)}% completed`)}<span>${pct(tr)}%</span></div></td></tr>`;
+  return `<section class="ov" aria-labelledby="ovH"><div class="ov-h"><h2 id="ovH">Who has what</h2><p>Tasks each partner leads. Tap a number to see the list.</p></div>
+    <table><thead><tr><th scope="col"><span class="sr-only">Partner</span></th><th scope="col">Assigned</th><th scope="col">Pending</th><th scope="col">Overdue</th><th scope="col">Completed</th><th scope="col" class="pc">Done</th></tr></thead><tbody>${body}</tbody></table></section>`;
 }
 
 function ring(p, m){
@@ -936,7 +1060,7 @@ function ring(p, m){
 function renderSummary(){
   const ym = S.month;
   const tip = `<b>How the monthly completion rate works</b><br>Big ring: tasks where the partner is lead, with a due date in ${fmtMonth(ym)}, completed by month end, divided by all such tasks. Tasks marked To confirm or Blocked are shown separately and left out of both numbers, so a partner is not marked down for work that is waiting on someone else.<br>Small ring: sub-tasks the partner owns that are due in ${fmtMonth(ym)} and done, divided by all such sub-tasks.<br>The tick on the ring is the partners' agreed 80% line.`;
-  let html = `<section aria-labelledby="sumH"><div class="sum-head"><h2 id="sumH">Monthly completion</h2>
+  let html = `<section aria-labelledby="sumH"><div class="sum-head"><h2 id="sumH">Monthly score</h2>
     <div class="month-nav"><button type="button" data-act="mprev" aria-label="Previous month">${ICON.left}</button><span>${fmtMonth(ym)}</span><button type="button" data-act="mnext" aria-label="Next month">${ICON.right}</button></div>
     <button type="button" class="info-btn" aria-label="How this is calculated" aria-expanded="false" data-act="tip">i<span class="tip" role="tooltip">${tip}</span></button></div><div class="summary">`;
   for (const pr of partnerList()){
@@ -954,78 +1078,84 @@ function renderSummary(){
   return html + `</div></section>`;
 }
 
+/* One task as a compact row: done circle (lead only), title and one line of key facts, status label (lead can change). */
+const CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>';
+function doneCircle(t){
+  const isLead = S.me && t.Lead === S.me.short, done = t.Status === "Done";
+  if (done) return `<span class="ck on" role="img" aria-label="Completed">${CHECK}</span>`;
+  if (!isLead) return `<span class="ck off" title="Only ${esc(DISPLAY[t.Lead]||t.Lead)}, the lead, can mark this done" aria-hidden="true"></span>`;
+  return `<button type="button" class="ck" data-done="${esc(t.TaskID)}" title="Mark done" aria-label="${esc(`Mark ${t.TaskID} done: ${t.Title}`)}">${CHECK}</button>`;
+}
 function renderCard(t){
-  const subs = subsOf(t.TaskID), done = subs.filter(s => s.Status === "Done").length;
-  const {pct} = progress(t);
-  const dc = dueClass(t);
-  const apa = t.AllPartnerApproval === "Yes" ? `<span class="apa" title="Needs approval from all three partners">All-partner approval <span class="ticks">${ORDER.map(p => `<span class="tick ${t["Approved"+p]==="Yes"?"on":""} ${PKEY[p]}" style="--c:var(--${PKEY[p]})" title="${DISPLAY[p]}: ${t["Approved"+p]==="Yes"?"approved":"pending"}">${t["Approved"+p]==="Yes"?"✓":""}</span>`).join("")}</span></span>` : "";
-  return `<div class="card-wrap" style="--accent:var(--${PKEY[t.Lead]})">${statusBtn(t)}<button type="button" class="card ${t.Status==="Done"?"done":""}" style="--accent:var(--${PKEY[t.Lead]})" data-open="${esc(t.TaskID)}" aria-label="${esc(t.TaskID+", "+t.Title+", "+t.Status+", "+dueText(t))}">
-    <div class="card-top"><span class="tid">${esc(t.TaskID)}</span>${t.Priority==="High"?`<span class="prio high">High priority</span>`:t.Priority==="Low"?`<span class="prio">Low priority</span>`:""}${t.Recurrence&&t.Recurrence!=="None"?`<span class="prio">${esc(t.Recurrence)}</span>`:""}</div>
-    <h4>${esc(t.Title)}</h4>
-    <div class="meta"><span class="due ${dc}">${ICON.cal}${esc(dueText(t))}</span></div>
-    <div class="prog"><span class="pct">${pct}%</span>${progressBar(pct, `${t.TaskID} ${pct}% complete`)}</div>
-    <div class="card-foot"><div class="avs">${av(t.Lead)}${supports(t).map(s => av(s,"sm")).join("")}</div><span class="subcount">${subs.length?`${done} of ${subs.length} sub-tasks done`:(t.Status==="Needs sub-tasks"?"Sub-tasks pending":"No sub-tasks")}</span></div>
-    ${apa?`<div style="margin-top:8px">${apa}</div>`:""}
-    ${t.Source?`<div class="src">${esc(t.Source)}</div>`:""}
-  </button></div>`;
+  const subs = subsOf(t.TaskID), sdone = subs.filter(s => s.Status === "Done").length;
+  const dc = dueClass(t), done = t.Status === "Done";
+  const when = done ? `Completed ${fmtDate((t.CompletedAt||"").slice(0,10)) || ""}`.trim() : dueText(t);
+  const bits = [`<span class="due ${done?"":dc}">${ICON.cal}${esc(when)}</span>`];
+  if (subs.length) bits.push(`<span>${sdone} of ${subs.length} sub-tasks</span>`);
+  else if (t.Status === "Needs sub-tasks") bits.push(`<span>Sub-tasks pending</span>`);
+  if (t.Priority === "High" && !done) bits.push(`<span class="prio high">High priority</span>`);
+  if (t.Status === "Blocked" && t.BlockedReason) bits.push(`<span class="wait">Waiting on: ${esc(t.BlockedReason)}</span>`);
+  if (t.AllPartnerApproval === "Yes"){
+    const n = ORDER.filter(p => t["Approved"+p] === "Yes").length;
+    bits.push(`<span title="Needs approval from all partners">Approvals ${n} of ${ORDER.length}</span>`);
+  }
+  const help = supports(t);
+  return `<div class="row ${done?"done":""}" style="--accent:var(--${PKEY[t.Lead]})">${doneCircle(t)}
+    <button type="button" class="row-main" data-open="${esc(t.TaskID)}" aria-label="${esc(`${t.TaskID}, ${t.Title}, ${t.Status}, ${when}. Open details.`)}">
+      <span class="t">${esc(t.Title)}</span>
+      <span class="m">${bits.join("")}${help.length?`<span class="with">with ${help.map(s => av(s,"xs")).join("")}</span>`:""}<span class="tid">${esc(t.TaskID)}</span></span>
+    </button>${statusBtn(t)}</div>`;
 }
 
+/* A sub-task this partner owns on another partner's task. The owner can tick it right here. */
 function renderSubRow(s){
   const t = taskById(s.TaskID); if (!t) return "";
-  return `<button type="button" class="sub-row ${s.Status==="Done"?"done":""}" data-open="${esc(t.TaskID)}" aria-label="${esc(s.SubtaskID+", "+s.Title+", for "+t.Title)}">
-    <span class="chip" style="${pc(t.Lead)}" title="Lead: ${esc(DISPLAY[t.Lead])}">${esc(INITIALS[t.Lead])}</span>
-    <span><span class="t">${esc(s.Title)}</span><span class="s">${esc(s.SubtaskID)} on "${esc(t.Title)}"${s.DueDate?`, due ${fmtDate(s.DueDate)}`:""}${s.Status!=="Not started"?`, ${esc(s.Status)}`:""}</span></span></button>`;
+  const mine = S.me && s.Owner === S.me.short, done = s.Status === "Done";
+  const over = !done && s.DueDate && s.DueDate < todayISO() && s.Status !== "To confirm";
+  return `<div class="row sub ${done?"done":""}">
+    <label class="sq ${mine?"":"off"}" title="${mine?(done?"Reopen this sub-task":"Tick when done"):`Only ${esc(DISPLAY[s.Owner]||s.Owner)} can tick this`}"><input type="checkbox" data-sub="${esc(s.SubtaskID)}" ${done?"checked":""} ${mine?"":"disabled"} aria-label="${esc(`${s.SubtaskID} ${s.Title}${done?", done":""}`)}"><span aria-hidden="true">${CHECK}</span></label>
+    <button type="button" class="row-main" data-open="${esc(t.TaskID)}" aria-label="${esc(`${s.Title}, for ${t.Title}. Open task.`)}">
+      <span class="t">${esc(s.Title)}</span>
+      <span class="m"><span class="for"><span class="chip" style="${pc(t.Lead)}" title="Lead: ${esc(DISPLAY[t.Lead])}">${esc(INITIALS[t.Lead])}</span><span class="ft">${esc(t.Title)}</span></span>${s.DueDate?`<span class="due ${over?"over":""}">${over?"Overdue, ":"Due "}${fmtDate(s.DueDate)}</span>`:""}${!["Not started","Done"].includes(s.Status)?`<span>${esc(s.Status)}</span>`:""}</span>
+    </button></div>`;
 }
 
 function renderBoard(people, single){
-  const pred = viewPredicate(S.view === "mine" ? "all" : S.view);
+  const pred = viewPredicate(S.view);
   const tasks = S.data.Tasks.filter(matchesFilters).filter(pred.task);
   const visibleTaskIds = new Set(S.data.Tasks.filter(matchesFilters).map(t => t.TaskID));
   let html = `<div class="board ${single?"one":""}">`;
   for (const p of people){
-    const pr = partnerList().find(x => x.ShortName === p) || {};
-    const leading = sortTasks(tasks.filter(t => t.Lead === p));
-    let supporting;
-    if (S.view === "mine"){
-      supporting = S.data.Subtasks.filter(s => s.Owner === p && visibleTaskIds.has(s.TaskID) && taskById(s.TaskID)?.Lead !== p);
-    } else {
-      supporting = S.data.Subtasks.filter(s => s.Owner === p && visibleTaskIds.has(s.TaskID) && taskById(s.TaskID)?.Lead !== p && pred.sub(s));
-    }
+    let leading = sortTasks(tasks.filter(t => t.Lead === p));
+    if (S.view === "done") leading = leading.sort((a,b) => (b.CompletedAt||"").localeCompare(a.CompletedAt||""));
+    const supporting = S.data.Subtasks.filter(s => s.Owner === p && visibleTaskIds.has(s.TaskID) && taskById(s.TaskID)?.Lead !== p && pred.sub(s));
     supporting.sort((a,b) => (a.Status==="Done")-(b.Status==="Done") || (a.DueDate||"9").localeCompare(b.DueDate||"9") || a.SubtaskID.localeCompare(b.SubtaskID));
-    const limit = S.showAll[p] ? 1e9 : 12, slimit = S.showAll[p+"s"] ? 1e9 : 10;
+    const limit = S.showAll[p] ? 1e9 : (single ? 30 : 12), slimit = S.showAll[p+"s"] ? 1e9 : (single ? 20 : 5);
+    const label = {pending:"pending", overdue:"overdue", done:"completed", all:"tasks"}[S.view] || "tasks";
     html += `<section class="col" style="${pc(p)}" aria-labelledby="h-${p}">
-      <div class="col-head">${av(p,"lg")}<div><h3 id="h-${p}">${esc(DISPLAY[p])}</h3><p>${esc(pr.Domains||"")}</p></div></div>
+      <div class="col-head">${av(p)}<h3 id="h-${p}">${esc(DISPLAY[p])}${S.me&&S.me.short===p?` <small>(you)</small>`:""}</h3><span class="col-n">${leading.length} ${label}</span></div>
       <div class="col-body">
         <div class="grp"><div class="grp-h"><span>Leading</span><span class="n">${leading.length}</span></div>
-          ${leading.length ? leading.slice(0,limit).map(renderCard).join("") : `<div class="empty">${emptyText("lead")}</div>`}
+          ${leading.length ? `<div class="rows">${leading.slice(0,limit).map(renderCard).join("")}</div>` : `<div class="empty">${emptyText("lead")}</div>`}
           ${leading.length>limit?`<button type="button" class="btn small more" data-more="${p}">Show all ${leading.length}</button>`:""}</div>
-        <div class="grp"><div class="grp-h"><span>Supporting</span><span class="n">${supporting.length}</span></div>
-          ${supporting.length ? supporting.slice(0,slimit).map(renderSubRow).join("") : `<div class="empty">${emptyText("support")}</div>`}
-          ${supporting.length>slimit?`<button type="button" class="btn small more" data-more="${p}s">Show all ${supporting.length}</button>`:""}</div>
+        ${supporting.length ? `<div class="grp"><div class="grp-h"><span>Helping on</span><span class="n">${supporting.length} sub-task${supporting.length===1?"":"s"}</span></div>
+          <div class="rows">${supporting.slice(0,slimit).map(renderSubRow).join("")}</div>
+          ${supporting.length>slimit?`<button type="button" class="btn small more" data-more="${p}s">Show all ${supporting.length}</button>`:""}</div>` : ""}
       </div></section>`;
   }
   return html + `</div>`;
 }
 function emptyText(kind){
-  if (S.q || S.filters.status || S.filters.domain || S.filters.source) return "Nothing matches these filters.";
-  const map = {overdue:"Nothing overdue. Nice work.", week:"Nothing due in the next 7 days.", done:"Nothing marked done yet."};
-  return map[S.view] || (kind === "lead" ? "No tasks to lead right now." : "No sub-tasks on other partners' tasks.");
-}
-
-function renderByMonth(){
-  const tasks = sortTasks(S.data.Tasks.filter(matchesFilters));
-  const groups = {};
-  tasks.forEach(t => { const k = t.DueDate ? ymOf(t.DueDate) : "none"; (groups[k] = groups[k] || []).push(t); });
-  const keys = Object.keys(groups).sort((a,b) => a==="none"?1:b==="none"?-1:a.localeCompare(b));
-  if (!keys.length) return `<div class="list-view"><div class="empty">Nothing matches these filters.</div></div>`;
-  return `<div class="list-view">${keys.map(k => `<section class="month-group"><h3>${k==="none"?"No due date":fmtMonth(k)} <span>${groups[k].length} task${groups[k].length===1?"":"s"}</span></h3><div class="cards-grid">${groups[k].map(renderCard).join("")}</div></section>`).join("")}</div>`;
+  if (S.q || activeFilters()) return "Nothing matches the search or filters.";
+  const map = {pending:"Nothing pending. All caught up.", overdue:"Nothing overdue. Nice work.", done:"Nothing completed yet."};
+  return map[S.view] || "No tasks to lead right now.";
 }
 
 function renderCalendar(){
   const ym = S.calMonth; const [y,m] = ym.split("-").map(Number);
   const first = new Date(y, m-1, 1); const startOffset = first.getDay();
   const start = new Date(y, m-1, 1 - startOffset);
-  const tasks = S.data.Tasks.filter(matchesFilters).filter(t => t.DueDate);
+  const tasks = S.data.Tasks.filter(matchesFilters).filter(t => t.DueDate && (!S.person || t.Lead === S.person || supports(t).includes(S.person)));
   const byDay = {}; tasks.forEach(t => (byDay[t.DueDate] = byDay[t.DueDate] || []).push(t));
   const t0 = todayISO();
   let grid = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"].map(d => `<div class="cal-dow">${d}</div>`).join("");
@@ -1037,8 +1167,8 @@ function renderCalendar(){
   }
   const monthTasks = sortTasks(tasks.filter(t => ymOf(t.DueDate) === ym)).sort((a,b) => a.DueDate.localeCompare(b.DueDate));
   const days = [...new Set(monthTasks.map(t => t.DueDate))];
-  const list = days.length ? days.map(d => `<h4>${fmtDate(d)}</h4>${monthTasks.filter(t=>t.DueDate===d).map(renderCard).join("")}`).join("") : `<div class="empty">No due dates in ${fmtMonth(ym)}.</div>`;
-  return `<section class="cal" aria-label="Calendar"><div class="cal-h"><h3>${fmtMonth(ym)}</h3><button type="button" class="btn small" data-act="ctoday">Today</button><button type="button" class="btn small" data-act="cprev" aria-label="Previous month">${ICON.left}</button><button type="button" class="btn small" data-act="cnext" aria-label="Next month">${ICON.right}</button></div><div class="cal-grid">${grid}</div><div class="cal-list">${list}</div></section>`;
+  const list = days.length ? days.map(d => `<h4>${fmtDate(d)}</h4><div class="rows">${monthTasks.filter(t=>t.DueDate===d).map(renderCard).join("")}</div>`).join("") : `<div class="empty">No due dates in ${fmtMonth(ym)}.</div>`;
+  return `<section class="cal" aria-label="Calendar"><div class="cal-h"><h3>${fmtMonth(ym)}</h3><button type="button" class="btn small" data-act="ctoday">Today</button><button type="button" class="btn small" data-act="cprev" aria-label="Previous month">${ICON.left}</button><button type="button" class="btn small" data-act="cnext" aria-label="Next month">${ICON.right}</button></div><div class="cal-grid">${grid}</div>${S.calDay && byDay[S.calDay] && ymOf(S.calDay) === ym ? `<div class="cal-day-list"><h4>${fmtDate(S.calDay)}</h4><div class="rows">${sortTasks(byDay[S.calDay]).map(renderCard).join("")}</div></div>` : ""}<div class="cal-list">${list}</div></section>`;
 }
 
 function renderDecisions(){
@@ -1052,7 +1182,7 @@ function renderMe(){
 }
 
 function renderLoading(){
-  $("#main").innerHTML = `<div class="wrap" aria-busy="true" aria-label="Loading tasks"><div style="height:24px"></div><div class="summary">${[0,1,2].map(()=>`<div class="skel" style="height:150px"></div>`).join("")}</div><div class="board">${[0,1,2].map(()=>`<div class="skel" style="height:420px;border-radius:22px"></div>`).join("")}</div></div>`;
+  $("#main").innerHTML = `<div class="wrap" aria-busy="true" aria-label="Loading tasks"><div style="height:20px"></div><div class="skel" style="height:250px"></div><div class="board">${[0,1,2].map(()=>`<div class="skel" style="height:420px;border-radius:22px"></div>`).join("")}</div></div>`;
 }
 function renderSignIn(error){
   $("#hdr").hidden = true;
@@ -1077,12 +1207,16 @@ function wireHeader(){
 }
 function wireMain(){
   const main = $("#main");
-  main.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { S.view = b.dataset.view; try{sessionStorage.setItem("kc-view",S.view);}catch(e){} render(); });
+  main.querySelectorAll("[data-view]").forEach(b => b.onclick = () => { setView(b.dataset.view); render(); });
   main.querySelectorAll("[data-filter]").forEach(s => s.onchange = () => { S.filters[s.dataset.filter] = s.value; render(); });
   main.querySelectorAll("[data-open]").forEach(b => b.onclick = () => openTask(b.dataset.open));
   main.querySelectorAll("[data-status]:not(:disabled)").forEach(b => b.onclick = e => { e.stopPropagation(); openStatusMenu(b); });
   main.querySelectorAll("[data-more]").forEach(b => b.onclick = () => { S.showAll[b.dataset.more] = true; render(); });
-  main.querySelectorAll("[data-day]").forEach(b => b.onclick = () => { S.view = "month"; render(); });
+  main.querySelectorAll("[data-day]").forEach(b => b.onclick = () => { S.calDay = b.dataset.day; render(); main.querySelector(".cal-day-list")?.scrollIntoView({behavior:"smooth", block:"nearest"}); });
+  main.querySelectorAll("[data-person]").forEach(b => b.onclick = () => { setPerson(b.dataset.person === S.person && b.classList.contains("who") ? "" : b.dataset.person); render(); });
+  main.querySelectorAll("[data-go]").forEach(b => b.onclick = () => { setView(b.dataset.go); setPerson(b.dataset.p); render(); main.querySelector(".board")?.scrollIntoView({behavior:"smooth", block:"start"}); });
+  main.querySelectorAll("[data-done]").forEach(b => b.onclick = e => { e.stopPropagation(); setTaskStatus(b.dataset.done, "Done"); });
+  main.querySelectorAll("input[data-sub]").forEach(cb => cb.onchange = () => toggleSub(cb.dataset.sub, cb.checked, cb));
   main.querySelectorAll("[data-act]").forEach(b => b.onclick = () => {
     const a = b.dataset.act;
     if (a === "mprev") S.month = shiftMonth(S.month, -1);
@@ -1091,10 +1225,14 @@ function wireMain(){
     if (a === "cnext") S.calMonth = shiftMonth(S.calMonth, 1);
     if (a === "ctoday") S.calMonth = todayISO().slice(0,7);
     if (a === "theme") { cycleTheme(); }
+    if (a === "filters") S.showFilters = !S.showFilters;
+    if (a === "clearf") S.filters = {status:"",domain:"",source:""};
     if (a === "tip") { b.setAttribute("aria-expanded", b.getAttribute("aria-expanded")==="true"?"false":"true"); return; }
     render();
   });
 }
+function setView(v){ S.view = v; try{ sessionStorage.setItem("kc-view2", v); }catch(e){} }
+function setPerson(p){ S.person = p || ""; try{ sessionStorage.setItem("kc-person", S.person); }catch(e){} }
 function themeLabel(){ const t = document.documentElement.dataset.theme; return t === "dark" ? "Dark" : t === "light" ? "Light" : "Automatic"; }
 function cycleTheme(){
   const t = document.documentElement.dataset.theme; const next = !t ? "light" : t === "light" ? "dark" : "";
